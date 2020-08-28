@@ -1,0 +1,47 @@
+# this is the cf_template.yml file
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  DynamoWriterRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Join ["-", [{"Ref": "AWS::Region"}, {"Ref": "AWS::StackName"}, "DynamoWriterRole"]]
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: !Join ["-", [{"Ref": "AWS::Region"}, {"Ref": "AWS::StackName"}, "AllPolicies"]]
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: '*'
+                Resource: '*'
+                
+  WriterLambda:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Description: "Writer receives messages from SQS and writes them to DynamoDB"
+      Handler: "code.Hello"
+      Role: !GetAtt DynamoWriterRole.Arn
+      # Code:
+      #   ZipFile: |
+      #     var aws = require('aws-sdk')
+      #     var response = require('cfn-response')
+      #     exports.handler = function(event, context) {
+      #         console.log("REQUEST RECEIVED:\n" + JSON.stringify(event))
+      #         response.send(event, context, "SUCCESS")
+      #     }
+      # Runtime: "nodejs12.x"
+      Code:
+        S3Bucket: "lambda-code-bucket"
+        S3Key: "lambda.zip"
+      Runtime: "python3.7"
+      MemorySize: 128
