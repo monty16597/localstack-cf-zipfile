@@ -17,7 +17,6 @@ echo 'executing template -------------------'
 awslocal cloudformation deploy --template-file=cf_template.yml --region=us-east-1 --stack-name=my-stack --endpoint-url=http://localhost:4566 && echo 'Created' || echo 'error'
 
 # List lambda function created from the stack
-echo 'list of lambdas ----------------------'
 awslocal lambda list-functions > lambda.json || echo 'error while listing functions'
 
 # Invoking function
